@@ -104,7 +104,11 @@
           <!-- Left Side: Text Content -->
           <div class="left-content">
             <div class="text-1"><i class="fas fa-terminal" style="color: var(--cyan); margin-right: 8px;" aria-hidden="true"></i> Hello there!!</div>
-            <h1 class="text-2">I'm Tanmoy <span class="surname">Biswas</span></h1>
+            <h1 class="text-2">
+  <span style="--i:1">I'm</span> 
+  <span style="--i:2">Tanmoy</span> 
+  <span class="surname" style="--i:3">Biswas</span>
+</h1>
             <div class="text-3">and I'm an
               <span class="typing" data-typewriter='["Associate Software Development Engineer","Full-Stack Engineer","Artificial Intelligence and Data Science Graduate","Open-Source Contributor"]'>Associate Software Development Engineer</span>
             </div>

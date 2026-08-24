@@ -4,20 +4,6 @@
  * Zero-dependency interaction layer. Replaces jQuery 3.6, Typed.js 2.0,
  * Waypoints 4.0 and Owl Carousel 2.3 (~118 KB of vendor code) with ~34 KB of
  * purpose-built ES2022.
- *
- * Architecture
- *   Kernel      one requestAnimationFrame loop drives every animation on the
- *               page; modules subscribe instead of opening their own loops.
- *   Module      lifecycle base class (mount / destroy) with automatic listener
- *               teardown. Registry mounts by selector and isolates failures so
- *               a single broken module can never blank the page.
- *   Reads/writes are batched: layout is measured on resize into a cached
- *               Viewport, and per-frame work only ever writes to transforms
- *               and opacity to stay off the layout/paint path.
- *
- * Everything degrades: no JS renders full static content, no IntersectionObserver
- * reveals everything immediately, and prefers-reduced-motion disables motion
- * rather than merely shortening it.
  * ========================================================================== */
 
 "use strict";
@@ -27,7 +13,6 @@ const Portfolio = (() => {
    * 1 — Environment
    * ======================================================================== */
 
-  /** @type {{io:boolean, ro:boolean, waapi:boolean, finePointer:boolean, canvas:boolean}} */
   const SUPPORTS = {
     io: "IntersectionObserver" in window,
     ro: "ResizeObserver" in window,
@@ -47,12 +32,10 @@ const Portfolio = (() => {
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
   const lerp = (a, b, t) => a + (b - a) * t;
-  /** Always-positive modulo — the backbone of the carousel's wrap-around. */
   const mod = (n, m) => ((n % m) + m) % m;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const rand = (min, max) => min + Math.random() * (max - min);
 
-  /** Namespaced localStorage that no-ops in private mode instead of throwing. */
   const Store = {
     key: (k) => `tb.portfolio.${k}`,
     get(k, fallback = null) {
@@ -75,13 +58,11 @@ const Portfolio = (() => {
 
   /* ===========================================================================
    * 2 — Motion preference
-   * A single source of truth. Reacts live to OS changes and to the in-page
-   * override exposed through the command palette.
    * ======================================================================== */
 
   const Motion = {
     _query: matchMedia("(prefers-reduced-motion: reduce)"),
-    _override: Store.get("reduce-motion", null), // true | false | null (= follow OS)
+    _override: Store.get("reduce-motion", null),
     _subs: new Set(),
 
     get reduced() {
@@ -91,7 +72,6 @@ const Portfolio = (() => {
       return !this.reduced;
     },
 
-    /** @param {boolean|null} value true, false, or null to follow the OS */
     setOverride(value) {
       this._override = value;
       Store.set("reduce-motion", value);
@@ -108,8 +88,6 @@ const Portfolio = (() => {
     _emit() {
       const root = document.documentElement;
       root.classList.toggle("reduce-motion", this.reduced);
-      // Lets CSS honour the OS media query when JS has no explicit opinion,
-      // while an explicit "motion on" override still wins.
       root.classList.toggle("motion-on", this._override === false);
       this._subs.forEach((fn) => fn(this.reduced));
     },
@@ -121,25 +99,20 @@ const Portfolio = (() => {
 
   /* ===========================================================================
    * 3 — Kernel: one rAF loop for the whole page
-   * Frames stop entirely when nothing is subscribed or the tab is hidden, so an
-   * idle background tab costs zero CPU. Delta time is normalised to 60fps units
-   * and clamped, so a stalled tab can never fling springs into orbit.
    * ======================================================================== */
 
   class Kernel {
     constructor() {
-      /** @type {Set<(dt:number, now:number)=>void>} */
       this.tasks = new Set();
       this.running = false;
       this.last = 0;
-      this.frameMs = 16.67; // smoothed frame cost, drives adaptive quality
+      this.frameMs = 16.67;
       this._tick = this._tick.bind(this);
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) this.start();
       });
     }
 
-    /** @returns {()=>void} unsubscribe */
     add(task) {
       this.tasks.add(task);
       this.start();
@@ -156,7 +129,6 @@ const Portfolio = (() => {
     _tick(now) {
       const raw = now - this.last;
       this.last = now;
-      // Clamp to 4 frames: prevents huge integration steps after a stall.
       const dt = clamp(raw, 0, 64) / 16.67;
       this.frameMs += (raw - this.frameMs) * 0.05;
 
@@ -178,7 +150,7 @@ const Portfolio = (() => {
   const kernel = new Kernel();
 
   /* ===========================================================================
-   * 4 — Viewport: layout read once per resize, never inside a frame
+   * 4 — Viewport
    * ======================================================================== */
 
   const Viewport = {
@@ -227,8 +199,7 @@ const Portfolio = (() => {
   };
 
   /* ===========================================================================
-   * 5 — Spring: critically-damped integrator used by the cursor, hero tilt and
-   * carousel. Cheaper than a full RK4 solver and stable at any frame rate.
+   * 5 — Spring Integrator
    * ======================================================================== */
 
   class Spring {
@@ -247,7 +218,6 @@ const Portfolio = (() => {
       this.value = this.target = value;
       this.velocity = 0;
     }
-    /** @returns {boolean} true while still moving — lets callers skip DOM writes */
     step(dt = 1) {
       const delta = this.target - this.value;
       if (
@@ -270,16 +240,13 @@ const Portfolio = (() => {
    * ======================================================================== */
 
   class Module {
-    /** @type {string|null} CSS selector each instance is mounted against */
     static selector = null;
 
     constructor(el) {
       this.el = el;
-      /** @type {Array<()=>void>} */
       this._teardown = [];
     }
 
-    /** addEventListener that unbinds itself on destroy(). */
     on(target, type, handler, options) {
       target.addEventListener(type, handler, options);
       this._teardown.push(() =>
@@ -288,12 +255,10 @@ const Portfolio = (() => {
       return handler;
     }
 
-    /** Subscribe to the shared rAF loop; auto-unsubscribed on destroy(). */
     frame(task) {
       this._teardown.push(kernel.add(task));
     }
 
-    /** Register any other cleanup (observers, timers). */
     cleanup(fn) {
       this._teardown.push(fn);
     }
@@ -313,9 +278,7 @@ const Portfolio = (() => {
   }
 
   const Registry = {
-    /** @type {Array<typeof Module>} */
     definitions: [],
-    /** @type {Module[]} */
     instances: [],
 
     define(...modules) {
@@ -329,7 +292,6 @@ const Portfolio = (() => {
           ? qsa(Def.selector)
           : [document.documentElement];
         for (const el of targets) {
-          // Failure isolation: one broken module must not take the page down.
           try {
             const instance = new Def(el);
             instance.mount();
@@ -349,7 +311,7 @@ const Portfolio = (() => {
   };
 
   /* ===========================================================================
-   * 7 — Announcer: one polite live region shared by every module
+   * 7 — Announcer
    * ======================================================================== */
 
   const Announcer = {
@@ -360,7 +322,6 @@ const Portfolio = (() => {
     say(message) {
       if (!this.el) return;
       this.el.textContent = "";
-      // Re-setting on the next frame guarantees screen readers see a change.
       requestAnimationFrame(() => {
         this.el.textContent = message;
       });
@@ -368,18 +329,11 @@ const Portfolio = (() => {
   };
 
   /* ===========================================================================
-   * 8 — Fuzzy matcher (fzf-style subsequence scoring)
-   * Returns null when the query is not a subsequence of the text; otherwise a
-   * score plus the matched indices so the palette can highlight them.
+   * 8 — Fuzzy matcher
    * ======================================================================== */
 
   const BONUS = { start: 12, wordStart: 8, consecutive: 6, camel: 5 };
 
-  /**
-   * @param {string} query
-   * @param {string} text
-   * @returns {{score:number, indices:number[]}|null}
-   */
   function fuzzyMatch(query, text) {
     const q = query.trim().toLowerCase();
     if (!q) return { score: 0, indices: [] };
@@ -406,19 +360,17 @@ const Portfolio = (() => {
         score += BONUS.camel;
 
       if (found === prevMatched + 1) score += BONUS.consecutive;
-      score -= Math.min(found - cursor, 6) * 0.4; // gap penalty, bounded
+      score -= Math.min(found - cursor, 6) * 0.4;
 
       indices.push(found);
       prevMatched = found;
       cursor = found + 1;
     }
 
-    // Prefer tighter, shorter matches.
     score -= text.length * 0.03;
     return { score, indices };
   }
 
-  /** Escape then wrap matched characters in <mark> for safe innerHTML use. */
   function highlight(text, indices) {
     const set = new Set(indices);
     let out = "";
@@ -442,7 +394,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 9 — Focus trap, shared by the mobile menu and the command palette
+   * 9 — Focus trap
    * ======================================================================== */
 
   const FOCUSABLE =
@@ -476,17 +428,12 @@ const Portfolio = (() => {
 
   /* ===========================================================================
    * 10 — SmoothScroll
-   * A hand-rolled eased scroll instead of `scroll-behavior: smooth`, because we
-   * need three things CSS cannot give: an offset for the sticky navbar, a
-   * duration that scales with distance, and cancellation the moment the user
-   * touches the wheel. Falls back to an instant jump under reduced motion.
    * ======================================================================== */
 
   const SmoothScroll = {
     _raf: 0,
     _cancel: null,
 
-    /** Cubic ease-in-out — symmetric, no overshoot at either end. */
     ease(t) {
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     },
@@ -496,7 +443,6 @@ const Portfolio = (() => {
       return nav ? nav.offsetHeight * 0.75 : 0;
     },
 
-    /** @param {HTMLElement|number} target element or absolute Y */
     to(target) {
       const destY =
         typeof target === "number"
@@ -512,7 +458,6 @@ const Portfolio = (() => {
         return Promise.resolve();
       }
 
-      // 480ms floor, +0.35ms per pixel, 1200ms ceiling.
       const duration = clamp(480 + Math.abs(distance) * 0.35, 480, 1200);
       const start = performance.now();
 
@@ -552,7 +497,7 @@ const Portfolio = (() => {
   };
 
   /* ===========================================================================
-   * 11 — Navigation: sticky state, scrollspy, focus-trapped mobile drawer
+   * 11 — Navigation
    * ======================================================================== */
 
   class Navigation extends Module {
@@ -566,7 +511,6 @@ const Portfolio = (() => {
       this.drawerOpen = false;
       this._releaseTrap = null;
 
-      // Section targets, measured on resize rather than on every scroll frame.
       this.sections = this.links
         .map((a) => ({
           link: a,
@@ -589,12 +533,6 @@ const Portfolio = (() => {
           e.preventDefault();
           this.closeDrawer();
           SmoothScroll.to(target).then(() => {
-            // Move focus into the section so keyboard users land where they aimed.
-            // We deliberately do NOT write the link's #hash to the URL: a nav click
-            // is ephemeral navigation, not a bookmark. Persisting it would make a
-            // later refresh teleport back to the last link pressed instead of
-            // starting at the top. Genuine deep links (site.com#projects) are still
-            // honoured on load below.
             target.setAttribute("tabindex", "-1");
             target.focus({ preventScroll: true });
           });
@@ -615,7 +553,6 @@ const Portfolio = (() => {
         this.on(this.scrollTopBtn, "click", () => SmoothScroll.to(0));
       }
 
-      // Deep link support: honour #hash on load once layout has settled.
       if (location.hash) {
         const target = qs(location.hash);
         if (target) requestAnimationFrame(() => SmoothScroll.to(target));
@@ -635,7 +572,6 @@ const Portfolio = (() => {
       this.el.classList.toggle("sticky", y > 20);
       this.scrollTopBtn?.classList.toggle("show", y > 500);
 
-      // Scrollspy: the section owning the viewport's upper third wins.
       const probe = y + Viewport.h * 0.32;
       let active = null;
       for (const s of this.sections)
@@ -675,7 +611,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 12 — ScrollProgress: reading indicator driven by transform only
+   * 12 — ScrollProgress
    * ======================================================================== */
 
   class ScrollProgress extends Module {
@@ -689,7 +625,6 @@ const Portfolio = (() => {
         "scroll",
         () => {
           const p = clamp(window.scrollY / Viewport.maxScroll, 0, 1);
-          // Skip the write unless it changes a visible pixel.
           if (Math.abs(p - last) < 0.002) return;
           last = p;
           this.bar.style.transform = `scaleX(${p})`;
@@ -701,11 +636,11 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 13 — Reveal: IntersectionObserver with index-based stagger
+   * 13 — Reveal
    * ======================================================================== */
 
   class Reveal extends Module {
-    static selector = null; // page-level singleton
+    static selector = null;
 
     mount() {
       const items = qsa(".reveal");
@@ -716,7 +651,6 @@ const Portfolio = (() => {
         return;
       }
 
-      // Group siblings so a row of cards cascades instead of popping together.
       const groupIndex = new Map();
       items.forEach((el) => {
         const parent = el.parentElement;
@@ -730,7 +664,7 @@ const Portfolio = (() => {
           for (const entry of entries) {
             if (!entry.isIntersecting) continue;
             entry.target.classList.add("in-view");
-            io.unobserve(entry.target); // one-shot: no work after reveal
+            io.unobserve(entry.target);
           }
         },
         { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
@@ -742,7 +676,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 14 — Counters: eased count-up that respects decimal precision
+   * 14 — Counters
    * ======================================================================== */
 
   class Counters extends Module {
@@ -797,20 +731,13 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 15 — Typewriter (replaces Typed.js)
-   * An async/await state machine rather than a chain of timeouts: the whole
-   * type → hold → delete cycle reads top to bottom, and a single generation
-   * counter cancels an in-flight cycle on destroy. Adds per-keystroke jitter so
-   * the rhythm reads human, skips the shared word prefix when rotating between
-   * phrases, and parks itself while the tab is hidden or the element is
-   * offscreen so it never burns frames nobody is watching.
+   * 15 — Typewriter
    * ======================================================================== */
 
   class Typewriter extends Module {
     static selector = "[data-typewriter]";
 
     mount() {
-      /** @type {string[]} */
       this.words = JSON.parse(this.el.dataset.typewriter || "[]");
       if (!this.words.length) return;
 
@@ -820,7 +747,6 @@ const Portfolio = (() => {
       this.generation = 0;
       this.visible = true;
 
-      // Screen readers get the full list as static text; the animation is decor.
       this.el.innerHTML = "";
       const sr = document.createElement("span");
       sr.className = "sr-only";
@@ -850,11 +776,10 @@ const Portfolio = (() => {
 
       this.cleanup(() => {
         this.generation++;
-      }); // cancels the running cycle
+      });
       this.run();
     }
 
-    /** Resolves only when the tab is visible and the element is on screen. */
     async gate() {
       while (document.hidden || !this.visible) {
         await sleep(220);
@@ -862,7 +787,6 @@ const Portfolio = (() => {
       }
     }
 
-    /** @param {number} gen generation snapshot; a mismatch aborts the cycle */
     async run() {
       const gen = ++this.generation;
       this.dead = false;
@@ -878,7 +802,6 @@ const Portfolio = (() => {
         await sleep(this.hold);
         if (gen !== this.generation) return;
 
-        // Only delete back to the shared prefix — feels intentional, not lazy.
         let shared = 0;
         while (
           shared < word.length &&
@@ -897,7 +820,6 @@ const Portfolio = (() => {
         if (gen !== this.generation) return;
         await this.gate();
         this.out.textContent = word.slice(0, i);
-        // Longer beat after punctuation and spaces mimics real typing.
         const ch = word[i - 1] || "";
         const jitter = rand(0.65, 1.5) * (/[\s,.&]/.test(ch) ? 2.1 : 1);
         await sleep(this.speed * jitter);
@@ -920,7 +842,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 16 — Pointer: one shared pointer position for cursor, tilt and particles
+   * 16 — Pointer
    * ======================================================================== */
 
   const Pointer = {
@@ -936,7 +858,7 @@ const Portfolio = (() => {
         (e) => {
           this.x = e.clientX;
           this.y = e.clientY;
-          this.nx = (e.clientX / Viewport.w) * 2 - 1; // -1 .. 1
+          this.nx = (e.clientX / Viewport.w) * 2 - 1;
           this.ny = (e.clientY / Viewport.h) * 2 - 1;
           this.active = true;
         },
@@ -967,10 +889,7 @@ const Portfolio = (() => {
   };
 
   /* ===========================================================================
-   * 17 — CustomCursor: eased ring + magnetic elements
-   * The dot tracks the raw pointer for precision; the ring eases toward it with
-   * a tight exponential follow so it feels weighted without lagging. Both write
-   * only transforms, and each write is skipped once its value is at rest.
+   * 17 — CustomCursor
    * ======================================================================== */
 
   class CustomCursor extends Module {
@@ -980,7 +899,6 @@ const Portfolio = (() => {
       this.dot = qs(".cursor-dot");
       this.ring = qs(".cursor-ring");
       if (!this.dot || !this.ring || !SUPPORTS.finePointer) return;
-      // Hidden by CSS rather than removed, so the palette can toggle it back on.
       document.documentElement.classList.toggle(
         "has-custom-cursor",
         !Motion.reduced,
@@ -989,27 +907,19 @@ const Portfolio = (() => {
         document.documentElement.classList.remove("has-custom-cursor"),
       );
       if (Motion.reduced) return;
-      // Ring position uses a tight exponential follow instead of a spring: it
-      // catches the pointer in ~150ms with no overshoot, so there is no visible
-      // lag, while still trailing the dot by a hair to read as "weighted". A
-      // low-stiffness spring here settles over ~1.5s and feels delayed.
       this.rx = Pointer.x;
       this.ry = Pointer.y;
-      this.dotX = this.dotY = NaN; // NaN forces the first dot write
+      this.dotX = this.dotY = NaN;
       this.primed = Pointer.active;
       this.scale = new Spring(1, { stiffness: 0.22, damping: 0.6 });
-      const FOLLOW = 0.3; // fraction of the gap closed per 60fps frame
+      const FOLLOW = 0.3;
       const at = (x, y, s) =>
         `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)${s === undefined ? "" : ` scale(${s})`}`;
 
-      // Park both at the current sample (the off-screen -9999 sentinel until the
-      // pointer first moves) so neither flashes at the top-left origin on load.
       this.dot.style.transform = at(Pointer.x, Pointer.y);
       this.ring.style.transform = at(Pointer.x, Pointer.y, 1);
 
       this.frame((dt) => {
-        // Snap to the pointer the first time we actually know where it is,
-        // instead of easing in from the off-screen sentinel (-9999).
         let justPrimed = false;
         if (!this.primed) {
           if (!Pointer.active) return;
@@ -1018,23 +928,19 @@ const Portfolio = (() => {
           this.primed = justPrimed = true;
         }
 
-        // Dot is glued to the raw pointer; only rewrite when it actually moves.
         if (Pointer.x !== this.dotX || Pointer.y !== this.dotY) {
           this.dotX = Pointer.x;
           this.dotY = Pointer.y;
           this.dot.style.transform = at(Pointer.x, Pointer.y);
         }
 
-        // Frame-rate-independent easing: k grows with dt so the *time* to catch
-        // up stays constant whether we run at 60 or 30 fps.
         const k = 1 - Math.pow(1 - FOLLOW, dt);
         const dx = Pointer.x - this.rx;
         const dy = Pointer.y - this.ry;
         this.rx += dx * k;
         this.ry += dy * k;
-        const scaleMoving = this.scale.step(dt); // stepped every frame — no short-circuit
+        const scaleMoving = this.scale.step(dt);
 
-        // Skip the ring write once it has caught up and the scale is at rest.
         if (
           !justPrimed &&
           !scaleMoving &&
@@ -1045,7 +951,6 @@ const Portfolio = (() => {
         this.ring.style.transform = at(this.rx, this.ry, this.scale.value);
       });
 
-      // Delegation, so cards and links added later still get the effect.
       const HOVER =
         "a, button, .btn, .btn-block, .spec-card, .skill-chip, .pf-nav, .menu-btn, .scroll-up-btn, input, [data-magnetic]";
       this.on(document, "pointerover", (e) => {
@@ -1070,7 +975,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 18 — Magnetic: buttons that lean toward the cursor inside a radius
+   * 18 — Magnetic
    * ======================================================================== */
 
   class Magnetic extends Module {
@@ -1118,9 +1023,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 19 — Spotlight: pointer-tracked glare on glass cards
-   * One delegated listener for every card on the page, coalesced into a single
-   * frame write. Only the hovered card's custom properties are touched.
+   * 19 — Spotlight
    * ======================================================================== */
 
   class Spotlight extends Module {
@@ -1168,7 +1071,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 20 — HeroParallax: spring-smoothed 3D tilt + scroll-linked depth
+   * 20 — HeroParallax
    * ======================================================================== */
 
   class HeroParallax extends Module {
@@ -1192,7 +1095,6 @@ const Portfolio = (() => {
       });
 
       this.frame((dt) => {
-        // Rest at zero when the pointer is elsewhere, rather than freezing.
         this.rx.target = this.hovering ? -Pointer.ny * 9 : 0;
         this.ry.target = this.hovering ? Pointer.nx * 9 : 0;
         const moving = this.rx.step(dt) || this.ry.step(dt);
@@ -1213,18 +1115,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 21 — ParticleField: canvas constellation behind the hero
-   *
-   * The interesting part is neighbour lookup. Linking every pair is O(n²) —
-   * 130 particles means 8,385 distance checks per frame. Instead particles are
-   * bucketed into a spatial hash whose cell size equals the link distance, so
-   * each particle only tests its own cell and four neighbours, and the pass
-   * becomes O(n). The grid is rebuilt each frame; for this population that is
-   * far cheaper than the comparisons it removes.
-   *
-   * Quality is adaptive: the field samples the kernel's smoothed frame cost and
-   * sheds particles on slow hardware rather than dropping frames. It also stops
-   * completely when scrolled out of view or the tab is hidden.
+   * 21 — ParticleField
    * ======================================================================== */
 
   const LINK_DIST = 132;
@@ -1234,10 +1125,9 @@ const Portfolio = (() => {
     static selector = "[data-particles]";
 
     mount() {
-      if (!SUPPORTS.canvas || Motion.reduced) return; // CSS hides the canvas
+      if (!SUPPORTS.canvas || Motion.reduced) return;
 
       this.ctx = this.el.getContext("2d", { alpha: true });
-      /** @type {{x:number,y:number,vx:number,vy:number,r:number}[]} */
       this.particles = [];
       this.grid = new Map();
       this.onScreen = true;
@@ -1259,7 +1149,6 @@ const Portfolio = (() => {
       this.frame((dt) => this.render(dt));
     }
 
-    /** Pull accent colours out of the stylesheet so JS never hardcodes theme. */
     readPalette() {
       const css = getComputedStyle(document.documentElement);
       const pick = (name, fallback) =>
@@ -1273,7 +1162,7 @@ const Portfolio = (() => {
 
     targetCount() {
       const area = this.w * this.h;
-      const base = SUPPORTS.finePointer ? 15500 : 26000; // sparser on phones
+      const base = SUPPORTS.finePointer ? 15500 : 26000;
       return Math.round(clamp((area / base) * this.quality, 18, 130));
     }
 
@@ -1281,7 +1170,6 @@ const Portfolio = (() => {
       const rect = this.el.getBoundingClientRect();
       this.w = Math.max(1, rect.width);
       this.h = Math.max(1, rect.height);
-      // Back the canvas at device resolution, draw in CSS pixels.
       this.el.width = Math.round(this.w * Viewport.dpr);
       this.el.height = Math.round(this.h * Viewport.dpr);
       this.ctx.setTransform(Viewport.dpr, 0, 0, Viewport.dpr, 0, 0);
@@ -1289,7 +1177,6 @@ const Portfolio = (() => {
       this.sync();
     }
 
-    /** Grow or shrink the population toward the target without a full rebuild. */
     sync() {
       const target = this.targetCount();
       while (this.particles.length > target) this.particles.pop();
@@ -1304,7 +1191,6 @@ const Portfolio = (() => {
       }
     }
 
-    /** Frame-cost sampling: shed or restore detail every ~90 frames. */
     adapt() {
       if (++this.sampleFrames < 90) return;
       this.sampleFrames = 0;
@@ -1329,7 +1215,6 @@ const Portfolio = (() => {
       const { ctx, particles, w, h } = this;
       ctx.clearRect(0, 0, w, h);
 
-      // Pointer position relative to the canvas, valid only while over it.
       const rect = this.el.getBoundingClientRect();
       const px = Pointer.x - rect.left;
       const py = Pointer.y - rect.top;
@@ -1340,7 +1225,6 @@ const Portfolio = (() => {
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        // Integrate, with a soft push away from the cursor.
         if (pointerInside) {
           const dx = p.x - px;
           const dy = p.y - py;
@@ -1358,7 +1242,6 @@ const Portfolio = (() => {
         p.x += p.vx * dt;
         p.y += p.vy * dt;
 
-        // Wrap, so the field never thins out at the edges.
         if (p.x < -10) p.x = w + 10;
         else if (p.x > w + 10) p.x = -10;
         if (p.y < -10) p.y = h + 10;
@@ -1370,7 +1253,6 @@ const Portfolio = (() => {
         else this.grid.set(k, [i]);
       }
 
-      // --- links: own cell + 4 forward neighbours (no pair counted twice) ---
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.palette.link;
       const cols = this.cols;
@@ -1404,7 +1286,6 @@ const Portfolio = (() => {
         }
       }
 
-      // --- nodes, brighter near the cursor ---
       for (const p of particles) {
         let heat = 0;
         if (pointerInside) {
@@ -1425,13 +1306,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 22 — Career Log: type filter + single-open disclosure
-   *
-   * Filtering toggles [hidden] on rows (CSS owns the display) and keeps the
-   * record counter honest, collapsing any open row that a filter hides. The
-   * heads are real <button>s, so Enter/Space and focus come for free, and the
-   * expand/collapse is pure CSS (grid-template-rows 0fr -> 1fr) — this module
-   * never measures or writes a single pixel.
+   * 22 — CareerLog
    * ======================================================================== */
 
   class CareerLog extends Module {
@@ -1443,18 +1318,15 @@ const Portfolio = (() => {
       this.countEl = qs("[data-log-count]", this.el);
       if (!this.rows.length) return;
 
-      // Disclosure — one row open at a time.
       this.rows.forEach((row) => {
         const head = qs(".log-head", row);
         if (head) this.on(head, "click", () => this.toggle(row));
       });
 
-      // Type filter.
       this.filters.forEach((btn) =>
         this.on(btn, "click", () => this.filter(btn)),
       );
 
-      // Deep link: ?log=work|edu|project|cert restores a filter on load.
       const wanted = new URLSearchParams(location.search).get("log");
       const match =
         wanted && this.filters.find((b) => b.dataset.cat === wanted);
@@ -1490,7 +1362,6 @@ const Portfolio = (() => {
           shown++;
           return;
         }
-        // A filtered-out row must not stay expanded behind the scenes.
         row.classList.remove("open");
         qs(".log-head", row)?.setAttribute("aria-expanded", "false");
       });
@@ -1498,7 +1369,6 @@ const Portfolio = (() => {
       if (this.countEl)
         this.countEl.textContent = `${shown} record${shown === 1 ? "" : "s"}`;
 
-      // Shareable filter state; guarded because file:// can reject replaceState.
       try {
         const params = new URLSearchParams(location.search);
         cat === "all" ? params.delete("log") : params.set("log", cat);
@@ -1518,24 +1388,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 23 — Carousel (replaces Owl Carousel)
-   *
-   * Infinite looping without cloned slides. Every slide owns a *virtual*
-   * position derived from a single floating-point offset:
-   *
-   *     offset  = mod(index - pos + LEAD, N) - LEAD
-   *     x       = offset * (slideWidth + gap)
-   *
-   * Because the modulo wraps, a slide that leaves the right edge reappears on
-   * the left automatically — no DOM cloning, no index bookkeeping, no seam to
-   * hide, and `pos` may drift arbitrarily far without ever needing a reset.
-   * LEAD keeps one and a half slides staged off the left edge so dragging
-   * backwards never reveals a gap.
-   *
-   * `pos` is a spring, so programmatic navigation, drag release and momentum
-   * all resolve through the same integrator instead of competing animations.
-   * The whole thing costs one transform write per visible slide per frame, and
-   * stops writing entirely once the spring settles.
+   * 23 — Carousel
    * ======================================================================== */
 
   const LEAD = 1.5;
@@ -1573,8 +1426,6 @@ const Portfolio = (() => {
       this.bindKeyboard();
 
       this.cleanup(Viewport.subscribe(() => this.measure()));
-      // Card heights change with wrapped text, so watch the viewport box too —
-      // but only react to *width* changes, since this module writes the height.
       if (SUPPORTS.ro) {
         const ro = new ResizeObserver(() => {
           const w = this.viewport.clientWidth;
@@ -1603,7 +1454,6 @@ const Portfolio = (() => {
         }),
       );
 
-      // A link receiving focus inside an offscreen slide pulls it into view.
       this.on(this.track, "focusin", (e) => {
         const slide = e.target.closest(".pf-slide");
         const i = this.slides.indexOf(slide);
@@ -1614,11 +1464,8 @@ const Portfolio = (() => {
       this.frame((dt) => this.tick(dt));
     }
 
-    /* --- geometry ------------------------------------------------------- */
-
     measure() {
       const styles = getComputedStyle(this.viewport);
-      // CSS owns the breakpoints; JS just reads the result.
       this.perView = Math.max(
         1,
         parseInt(styles.getPropertyValue("--per-view") || "3", 10),
@@ -1630,8 +1477,6 @@ const Portfolio = (() => {
       this.step = this.slideWidth + this.gap;
       this.looping = this.slides.length > this.perView;
 
-      // Measure natural heights first, then equalise. Reading before writing
-      // keeps this to a single layout pass, and it only runs on resize.
       this.track.style.height = "auto";
       let tallest = 0;
       for (const slide of this.slides) {
@@ -1645,12 +1490,11 @@ const Portfolio = (() => {
 
       this.el.classList.toggle("is-static", !this.looping);
       if (!this.looping) this.pos.set(0);
-      this._written = new WeakMap(); // force a full rewrite at new geometry
+      this._written = new WeakMap();
       this.layout();
       this.syncDots();
     }
 
-    /** Write transforms for the current `pos`. Skips unchanged slides. */
     layout() {
       const p = this.pos.value;
       const n = this.slides.length;
@@ -1662,7 +1506,6 @@ const Portfolio = (() => {
           this._written.set(slide, x);
           slide.style.transform = `translate3d(${x}px, 0, 0)`;
         }
-        // Anything fully outside the viewport is hidden from AT and tab order.
         const visible = offset > -0.9 && offset < this.perView - 0.1;
         if (slide.dataset.visible !== String(visible)) {
           slide.dataset.visible = String(visible);
@@ -1702,8 +1545,6 @@ const Portfolio = (() => {
       }
     }
 
-    /* --- navigation ----------------------------------------------------- */
-
     get index() {
       return mod(Math.round(this.pos.target), this.slides.length);
     }
@@ -1717,7 +1558,6 @@ const Portfolio = (() => {
       this._autoplayAcc = 0;
     }
 
-    /** Travel the shortest way round the loop to `i`. */
     goTo(i, announce = false) {
       const n = this.slides.length;
       if (!n) return;
@@ -1765,8 +1605,6 @@ const Portfolio = (() => {
       });
     }
 
-    /* --- pointer drag with inertia -------------------------------------- */
-
     bindDrag() {
       let startX = 0,
         startPos = 0,
@@ -1794,7 +1632,6 @@ const Portfolio = (() => {
           if (!this.dragging || e.pointerId !== pointerId) return;
           const dx = e.clientX - startX;
           moved = Math.abs(dx);
-          // Exponential moving average keeps the release velocity stable.
           velocity = lerp(velocity, (e.clientX - lastX) / this.step, 0.35);
           lastX = e.clientX;
           this.pos.value = this.pos.target = startPos - dx / this.step;
@@ -1815,7 +1652,6 @@ const Portfolio = (() => {
         if (!this.dragging || (e && e.pointerId !== pointerId)) return;
         this.dragging = false;
         this.el.classList.remove("is-dragging");
-        // Flick momentum, capped so a hard swipe stays readable.
         const projected = this.pos.value - clamp(velocity * 4.5, -2, 2);
         this.pos.target = Math.round(projected);
         if (!this.looping) {
@@ -1828,7 +1664,6 @@ const Portfolio = (() => {
         this.pos.velocity = 0;
         kernel.start();
         if (moved > 8) {
-          // Swallow the click that ends a drag so it never opens a project.
           const swallow = (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
@@ -1852,8 +1687,6 @@ const Portfolio = (() => {
       this.on(this.viewport, "pointercancel", release);
       this.on(this.viewport, "dragstart", (e) => e.preventDefault());
     }
-
-    /* --- dots ----------------------------------------------------------- */
 
     buildDots() {
       this.dotsWrap =
@@ -1883,9 +1716,6 @@ const Portfolio = (() => {
       });
     }
 
-    /* --- filtering ------------------------------------------------------ */
-
-    /** @param {HTMLElement[]} slides subset of the original slides, in order */
     setVisible(slides) {
       this.slides = slides;
       for (const slide of this.allSlides) {
@@ -1905,10 +1735,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 24 — ProjectFilter: fuzzy search + tag chips over the carousel
-   * Content stays in the HTML (crawlable, works with JS off) and is *hydrated*
-   * into an index on mount, rather than rendered from a JS array.
-   * State round-trips through the query string so a filtered view is shareable.
+   * 24 — ProjectFilter
    * ======================================================================== */
 
   class ProjectFilter extends Module {
@@ -1925,7 +1752,6 @@ const Portfolio = (() => {
       this.tag = "all";
       this.query = "";
 
-      // Hydrate a search index from the markup that is already on the page.
       this.index = this.carousel.allSlides.map((slide) => ({
         slide,
         tags: (slide.dataset.tags || "").split(/[,\s]+/).filter(Boolean),
@@ -1963,7 +1789,6 @@ const Portfolio = (() => {
         });
       }
 
-      // Restore ?tag= / ?q= from the URL.
       const params = new URLSearchParams(location.search);
       const tag = params.get("tag");
       const q = params.get("q");
@@ -1986,7 +1811,6 @@ const Portfolio = (() => {
           return hit ? { entry, score: hit.score } : null;
         })
         .filter(Boolean)
-        // Relevance first when searching; original order otherwise.
         .sort((a, b) => (q ? b.score - a.score : 0));
 
       const slides = matches.map((m) => m.entry.slide);
@@ -2011,7 +1835,6 @@ const Portfolio = (() => {
 
       if (slides.length) this.carousel.setVisible(slides);
 
-      // Shareable state, without adding history entries on every keystroke.
       const params = new URLSearchParams(location.search);
       this.tag === "all" ? params.delete("tag") : params.set("tag", this.tag);
       q ? params.set("q", q) : params.delete("q");
@@ -2033,20 +1856,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 25 — CommandPalette (⌘K / Ctrl-K)
-   *
-   * The whole UI is built in JS — nothing ships in the HTML — and the action
-   * list is *derived from the page*: every section heading becomes a jump
-   * command and every project slide becomes an open command, so the palette
-   * cannot drift out of sync with the content.
-   *
-   * Ranking runs the shared fuzzy matcher over title + keywords, then applies a
-   * recency boost from the last five executed commands. Matched characters are
-   * highlighted from the returned index list.
-   *
-   * Accessibility: combobox pattern with aria-activedescendant, roving virtual
-   * focus (the input keeps real focus so typing never breaks), focus trap,
-   * inert background, scroll lock, and focus restored to the trigger on close.
+   * 25 — CommandPalette
    * ======================================================================== */
 
   const MAX_RESULTS = 8;
@@ -2084,11 +1894,7 @@ const Portfolio = (() => {
       );
     }
 
-    /* --- DOM ------------------------------------------------------------ */
-
     build() {
-      // Remounting (the reduced-motion toggle destroys and rebuilds every
-      // module) must not leave a second palette behind.
       qsa(".cmdk, .cmdk-toast").forEach((n) => n.remove());
 
       const root = document.createElement("div");
@@ -2129,7 +1935,6 @@ const Portfolio = (() => {
         this.render();
       });
       this.on(this.input, "keydown", (e) => this.onKeydown(e));
-      // Pointer selection keeps the virtual cursor in sync with the mouse.
       this.on(this.list, "pointermove", (e) => {
         const item = e.target.closest(".cmdk-item");
         if (!item) return;
@@ -2145,8 +1950,6 @@ const Portfolio = (() => {
       });
     }
 
-    /* --- actions, derived from the live DOM ------------------------------ */
-
     collectActions() {
       const add = (action) => this.actions.push(action);
 
@@ -2160,8 +1963,6 @@ const Portfolio = (() => {
           keywords: `section jump ${id.slice(1)}`,
           run: () => {
             const target = qs(id);
-            // Scroll only — see Navigation: a jump is ephemeral, so we don't
-            // persist the #hash (a refresh should not teleport back here).
             if (target) SmoothScroll.to(target);
           },
         });
@@ -2269,12 +2070,9 @@ const Portfolio = (() => {
       });
     }
 
-    /* --- ranking -------------------------------------------------------- */
-
     search(query) {
       const q = query.trim();
       if (!q) {
-        // Empty query: recents first, then source order.
         const ranked = [...this.actions].sort((a, b) => {
           const ai = this.recent.indexOf(a.id);
           const bi = this.recent.indexOf(b.id);
@@ -2399,7 +2197,6 @@ const Portfolio = (() => {
       ].slice(0, 5);
       Store.set("recent-commands", this.recent);
       this.close();
-      // Let the closing transition start before the action moves the page.
       requestAnimationFrame(() => {
         try {
           action.run();
@@ -2423,8 +2220,6 @@ const Portfolio = (() => {
         setTimeout(() => toast.remove(), 600);
       }, 1900);
     }
-
-    /* --- open / close --------------------------------------------------- */
 
     toggle() {
       this.open ? this.close() : this.show();
@@ -2463,14 +2258,14 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 26 — StatsMonitor: live frame cost, toggled from the palette
+   * 26 — StatsMonitor
    * ======================================================================== */
 
   class StatsMonitor extends Module {
     static selector = null;
 
     mount() {
-      qsa(".stats-monitor").forEach((n) => n.remove()); // idempotent across remounts
+      qsa(".stats-monitor").forEach((n) => n.remove());
       const el = document.createElement("div");
       el.className = "stats-monitor";
       el.setAttribute("aria-hidden", "true");
@@ -2497,7 +2292,7 @@ const Portfolio = (() => {
   }
 
   /* ===========================================================================
-   * 27 — LazyMedia: decode images off-thread, then fade them in
+   * 27 — LazyMedia
    * ======================================================================== */
 
   class LazyMedia extends Module {
@@ -2524,12 +2319,6 @@ const Portfolio = (() => {
 
   /* ===========================================================================
    * 28 — Boot
-   *
-   * Order matters in exactly one place: ProjectFilter looks up the mounted
-   * Carousel instance, so it is registered after it. Everything else is
-   * independent. Toggling reduced motion at runtime tears the whole registry
-   * down and remounts it, which is how a module that opted out of animating at
-   * mount time can come back to life without a page reload.
    * ======================================================================== */
 
   const MODULES = [
@@ -2545,7 +2334,7 @@ const Portfolio = (() => {
     ParticleField,
     CareerLog,
     Carousel,
-    ProjectFilter, // filter must follow the carousel
+    ProjectFilter,
     CommandPalette,
     StatsMonitor,
     LazyMedia,
@@ -2561,8 +2350,6 @@ const Portfolio = (() => {
 
     Registry.define(...MODULES).mountAll();
 
-    // Reveal the page only once modules are wired, to avoid a flash of
-    // un-animated content.
     document.documentElement.classList.add("js-ready");
 
     let remounting = false;
@@ -2582,10 +2369,6 @@ const Portfolio = (() => {
       "background:#4C8DFF;color:#050914;font-weight:700;border-radius:3px 0 0 3px",
       "background:#0f1e3a;color:#7FB4FF;border-radius:0 3px 3px 0",
     );
-    console.info(
-      "%cPress ⌘K / Ctrl-K to open the command palette.",
-      "color:#7C8AA5",
-    );
   }
 
   if (document.readyState === "loading") {
@@ -2594,7 +2377,6 @@ const Portfolio = (() => {
     boot();
   }
 
-  /* Public surface — handy for debugging from the console. */
   return {
     SUPPORTS,
     Motion,

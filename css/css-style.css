@@ -1,11 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 
-/* =============================================================================
-   Tanmoy Biswas — portfolio stylesheet
-   Sapphire glassmorphism. Paired with js/script.js, which owns every animation
-   that needs per-frame control. Anything CSS can do alone stays in CSS.
-   ========================================================================== */
-
 :root {
   --ink-1: #050914;
   --ink-2: #0a1428;
@@ -36,8 +30,6 @@
   padding: 0;
   text-decoration: none;
 }
-/* JS drives smooth scrolling so it can offset for the sticky navbar and be
-   cancelled mid-flight; CSS scroll-behavior would fight it. */
 html {
   scroll-behavior: auto;
 }
@@ -59,7 +51,6 @@ h6 {
   font-family: var(--display);
 }
 
-/* Button reset — declared before the glass rule so glass surfaces still win. */
 button {
   font: inherit;
   color: inherit;
@@ -84,7 +75,6 @@ body.cmdk-open {
   overflow: hidden;
 }
 
-/* --- accessibility primitives -------------------------------------------- */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -117,7 +107,6 @@ body.cmdk-open {
   outline-offset: 3px;
 }
 
-/* Without JS nothing should stay invisible. */
 .no-js .reveal {
   opacity: 1 !important;
   transform: none !important;
@@ -127,7 +116,6 @@ body.cmdk-open {
   display: none;
 }
 
-/* Dedicated Background Image Layer */
 .fixed-bg-image {
   position: fixed;
   inset: 0;
@@ -141,7 +129,6 @@ body.cmdk-open {
   transform: translateZ(0);
 }
 
-/* Fallback gradient and grain */
 body::before {
   content: "";
   position: fixed;
@@ -249,6 +236,7 @@ body::after {
     transform: translate3d(30px, -24px, 0) scale(1.1);
   }
 }
+
 ::-webkit-scrollbar {
   width: 11px;
 }
@@ -264,6 +252,7 @@ body::after {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--blue);
 }
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -276,22 +265,12 @@ section:focus {
   outline: none;
 }
 
-/* --- custom cursor (only while JS has it mounted) ------------------------ */
-.has-custom-cursor a,
-.has-custom-cursor button,
-.has-custom-cursor .btn,
-.has-custom-cursor .btn-block,
-.has-custom-cursor .interactive-link,
-.has-custom-cursor .spec-card,
-.has-custom-cursor .skill-chip,
-.has-custom-cursor .pf-nav,
-.has-custom-cursor .menu-btn,
-.has-custom-cursor .scroll-up-btn {
-  cursor: none;
-}
-.has-custom-cursor .cursor-dot,
-.has-custom-cursor .cursor-ring {
-  display: block;
+/* --- CUSTOM CURSOR FIX: Guaranteed High Z-Index & Non-Blocking --- */
+@media (hover: hover) and (pointer: fine) {
+  .cursor-dot,
+  .cursor-ring {
+    display: block !important;
+  }
 }
 .cursor-dot,
 .cursor-ring {
@@ -299,8 +278,8 @@ section:focus {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 10000;
-  pointer-events: none;
+  z-index: 999999 !important;
+  pointer-events: none !important;
   border-radius: 50%;
   will-change: transform;
 }
@@ -323,7 +302,6 @@ section:focus {
   background: rgba(76, 141, 255, 0.12);
 }
 
-/* --- reading progress ---------------------------------------------------- */
 .scroll-progress {
   position: fixed;
   top: 0;
@@ -355,7 +333,6 @@ section:focus {
   padding: 0 40px;
 }
 
-/* --- the shared glass surface -------------------------------------------- */
 .panel,
 .spec-card,
 .navbar.sticky,
@@ -404,7 +381,6 @@ section .title .tag {
   pointer-events: none;
   transition: background 0.3s ease;
 }
-/* Pointer-tracked spotlight: JS writes --spot-x / --spot-y, CSS does the rest. */
 .spec-card.lit::before,
 .panel.lit::before {
   height: 100%;
@@ -450,7 +426,7 @@ section .title .tag {
   padding: 46px;
 }
 
-/* --- navbar -------------------------------------------------------------- */
+/* Navbar */
 .navbar {
   padding: 32px 0;
   position: fixed;
@@ -599,7 +575,7 @@ section .title .tag {
   --lift: -3px;
 }
 
-/* --- hero ---------------------------------------------------------------- */
+/* Hero Section */
 .home {
   position: relative;
   color: var(--paper);
@@ -638,7 +614,6 @@ section .title .tag {
   position: relative;
 }
 
-/* Canvas constellation — behind content, above the ghost word. */
 .hero-canvas {
   position: absolute;
   inset: 0;
@@ -647,7 +622,6 @@ section .title .tag {
   z-index: 1;
   pointer-events: none;
 }
-
 .hero-ghost {
   position: absolute;
   top: 50%;
@@ -786,27 +760,49 @@ section .title .tag {
   box-shadow: 0 8px 24px rgba(2, 8, 24, 0.35);
   margin-bottom: 15px;
 }
+
+/* --- SAFE S-WAVE HERO HEADING ANIMATION --- */
 .home .left-content .text-2 {
   font-family: var(--display);
   font-size: clamp(40px, 5.5vw, 75px);
   font-weight: 700;
   letter-spacing: -0.03em;
-  line-height: 1.1;
+  line-height: 1.15;
   margin: 0 0 10px;
   color: var(--paper);
   text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  display: inline-block;
+  animation: smoothFloatWave 4s ease-in-out infinite;
+  will-change: transform;
+  position: relative;
+  z-index: 2;
 }
+
+/* Gradient text fix for Biswas */
 .home .left-content .text-2 span.surname {
   background: linear-gradient(
     100deg,
-    var(--blue-light) 0%,
-    var(--indigo) 55%,
-    var(--cyan) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+    #7fb4ff 0%,
+    #6d7bff 55%,
+    #7fe3ff 100%
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block !important;
 }
+
+@keyframes smoothFloatWave {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.3deg);
+  }
+}
+
 .home .left-content .text-3 {
   font-size: clamp(18px, 2.2vw, 24px);
   font-weight: 400;
@@ -923,7 +919,6 @@ section .title .tag {
   animation-delay: 0.4s;
 }
 
-/* Scroll reveal — JS sets --reveal-delay per sibling for a cascade. */
 .reveal {
   opacity: 0;
   transform: translateY(38px) scale(0.98);
@@ -938,7 +933,6 @@ section .title .tag {
   transform: translateY(0) scale(1);
 }
 
-/* --- marquees ------------------------------------------------------------ */
 .marquee {
   position: relative;
   overflow: hidden;
@@ -1043,11 +1037,6 @@ section .title .tag {
   box-shadow: 0 6px 18px rgba(2, 8, 24, 0.3);
 }
 
-/* --- buttons -------------------------------------------------------------
-   Transforms are composed from custom properties so the magnetic spring (JS,
-   writes --mag every frame) and the hover lift (CSS) never overwrite one
-   another. Neither needs to know the other exists.
-   --------------------------------------------------------------------------*/
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1120,7 +1109,6 @@ section .title .tag {
   transform: translateX(3px);
 }
 
-/* --- stats --------------------------------------------------------------- */
 .stats-strip {
   padding: 70px 0 30px;
 }
@@ -1156,7 +1144,6 @@ section .title .tag {
   color: var(--muted);
 }
 
-/* --- about --------------------------------------------------------------- */
 .about .about-content {
   display: flex;
   flex-wrap: wrap;
@@ -1224,7 +1211,6 @@ section .title .tag {
   font-weight: 600;
 }
 
-/* --- skills -------------------------------------------------------------- */
 .skills-marquee {
   margin: 0 -40px 60px;
 }
@@ -1261,17 +1247,10 @@ section .title .tag {
   color: var(--text);
 }
 
-/* --- experience: the career log -----------------------------------------
-   18 alternating cards were replaced by one filterable, keyboard-navigable
-   console. Category lives on the left edge (a colour bar) and in a mono tag;
-   the detail is a disclosure that grows via grid-template-rows, so there is no
-   JS height measurement to drift out of sync.
-   ------------------------------------------------------------------------- */
 .career-log {
   max-width: 1000px;
   margin: 0 auto;
 }
-
 .log-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -1364,7 +1343,6 @@ section .title .tag {
   background: rgba(127, 180, 255, 0.06);
 }
 
-/* category encodes a real distinction, so it earns colour on both edge + tag */
 .log-row[data-cat="work"] > .log-head {
   border-left-color: rgba(127, 180, 255, 0.55);
 }
@@ -1446,8 +1424,6 @@ section .title .tag {
   color: var(--blue-light);
 }
 
-/* disclosure: grid rows animate the height, visibility keeps collapsed content
-   out of the tab order without a display:none jump */
 .log-detail {
   display: grid;
   grid-template-rows: 0fr;
@@ -1483,7 +1459,6 @@ section .title .tag {
   max-width: 90ch;
 }
 
-/* --- projects: repo-card primitives (shared by pinned + carousel) -------- */
 .repo-line {
   display: inline-flex;
   align-items: center;
@@ -1568,7 +1543,6 @@ section .title .tag {
   }
 }
 
-/* --- projects: pinned flagship ------------------------------------------- */
 .project-featured {
   display: flex;
   flex-wrap: wrap;
@@ -1612,7 +1586,6 @@ section .title .tag {
   margin-top: 4px;
 }
 
-/* --- projects: filter bar ------------------------------------------------ */
 .proj-filter {
   display: flex;
   flex-wrap: wrap;
@@ -1706,11 +1679,6 @@ section .title .tag {
   display: none;
 }
 
-/* --- projects: custom carousel ------------------------------------------
-   --per-view lives in CSS so breakpoints stay where breakpoints belong; the
-   carousel module reads the computed value instead of duplicating the
-   responsive logic in JavaScript.
-   ------------------------------------------------------------------------- */
 .carousel-wrap {
   position: relative;
 }
@@ -1796,7 +1764,7 @@ section .title .tag {
   position: relative;
   border-radius: 14px;
   overflow: hidden;
-  margin-bottom: 15px;
+  margin-bottom: 22px;
   border: 1px solid var(--line);
   transition: all 0.4s ease;
 }
@@ -1835,9 +1803,6 @@ section .title .tag {
 .pf-nav.next {
   right: -22px;
 }
-/* Too few slides to loop: the carousel adds .is-static and the controls go away.
-   The buttons precede .pf-carousel in the markup, so this needs :has() rather
-   than a sibling combinator — with the media query below as the fallback. */
 .carousel-wrap:has(.pf-carousel.is-static) .pf-nav {
   display: none;
 }
@@ -1872,7 +1837,6 @@ section .title .tag {
   background: linear-gradient(90deg, var(--blue-light), var(--indigo));
 }
 
-/* --- contact & footer ---------------------------------------------------- */
 .contact-content {
   display: flex;
   flex-wrap: wrap;
@@ -1967,7 +1931,6 @@ section .title .tag {
   gap: 6px;
 }
 
-/* --- typewriter ---------------------------------------------------------- */
 .typing,
 .typing-2 {
   display: inline;
@@ -1995,7 +1958,6 @@ section .title .tag {
   }
 }
 
-/* --- images: fade in after decode --------------------------------------- */
 .img-fade {
   opacity: 0;
   transition: opacity 0.6s ease;
@@ -2007,10 +1969,6 @@ section .title .tag {
   opacity: 1;
 }
 
-/* =============================================================================
-   COMMAND PALETTE (⌘K)
-   Built entirely by JS; these are its styles.
-   ========================================================================== */
 .cmdk {
   position: fixed;
   inset: 0;
@@ -2203,7 +2161,6 @@ section .title .tag {
   transform: translate(-50%, 0);
 }
 
-/* --- performance monitor (palette-toggled) ------------------------------ */
 .stats-monitor {
   position: fixed;
   left: 16px;
@@ -2225,11 +2182,6 @@ section .title .tag {
   display: block;
 }
 
-/* =============================================================================
-   REDUCED MOTION
-   Honours the OS setting and the in-page override. Motion is removed, not
-   merely shortened — and `.motion-on` lets someone opt back in explicitly.
-   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   html:not(.motion-on) *,
   html:not(.motion-on) *::before,
@@ -2249,35 +2201,6 @@ section .title .tag {
     display: none;
   }
 }
-.reduce-motion *,
-.reduce-motion *::before,
-.reduce-motion *::after {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001ms !important;
-}
-.reduce-motion .reveal {
-  opacity: 1;
-  transform: none;
-}
-.reduce-motion .hero-canvas,
-.reduce-motion .cursor-dot,
-.reduce-motion .cursor-ring,
-.reduce-motion .liquid-blob,
-.reduce-motion .scroll-cue .mouse::before {
-  display: none;
-}
-.reduce-motion .marquee-track {
-  animation: none;
-  transform: none;
-}
-.reduce-motion .tw-caret {
-  animation: none;
-}
-
-/* =============================================================================
-   RESPONSIVE
-   ========================================================================== */
 
 @media (max-width: 1170px) {
   .menu-btn {
@@ -2358,7 +2281,6 @@ section .title .tag {
   .hero-image-wrapper {
     width: min(320px, 80vw);
   }
-
   .pf-nav {
     display: none;
   }
@@ -2393,9 +2315,6 @@ section .title .tag {
   .project-featured .feat-shot {
     min-height: 240px;
   }
-
-  /* Career Log: fold the 4-column head into meta-over-role so the title keeps
-     its width on a phone, and pull the detail copy back to the card edge. */
   .log-head {
     grid-template-columns: auto auto 1fr;
     grid-template-areas: "period cat chev" "role role role";
@@ -2422,16 +2341,66 @@ section .title .tag {
   .log-detail p {
     padding: 6px 16px 20px;
   }
-
   .contact-list li {
     grid-template-columns: 78px 1fr;
   }
-
   .cmdk {
     padding: 8vh 14px 14px;
   }
   .cmdk-foot {
     gap: 12px;
     font-size: 10.5px;
+  }
+}
+
+/* =============================================================================
+   SAFE S-WAVE HERO HEADING ANIMATION & Z-INDEX ISOLATION
+   ========================================================================== */
+/* --- TRUE FLUID S-WAVE HERO HEADING ANIMATION --- */
+.home .left-content .text-2 {
+  font-family: var(--display);
+  font-size: clamp(40px, 5.5vw, 75px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: var(--paper);
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  display: inline-block;
+  will-change: transform;
+  position: relative;
+  z-index: 2;
+  /* Poora block move nahi karega, balki iske andar ke words/letters wave karenge */
+}
+
+/* Agar aapke HTML mein words ya letters par spans hain, ya hum pure text ko flex wave denge */
+.home .left-content .text-2 {
+  animation: none; /* Block animation hata di taaki rigid movement na ho */
+}
+
+/* Text ke parts/words ko true wave motion dene ke liye */
+.home .left-content .text-2 span {
+  display: inline-block;
+  animation: trueWaveEffect 2s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.15s); /* Har ek character/word me delay taaki left-to-right wave bahe */
+  will-change: transform;
+}
+
+/* Gradient text fix for Biswas */
+.home .left-content .text-2 span.surname {
+  background: linear-gradient(100deg, #7fb4ff 0%, #6d7bff 55%, #7fe3ff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block !important;
+}
+
+@keyframes trueWaveEffect {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(2deg); /* Upar uthega aur thoda tilt hoga */
   }
 }
