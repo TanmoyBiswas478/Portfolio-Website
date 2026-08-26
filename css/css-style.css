@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"); */
 
 :root {
   --ink-1: #050914;
@@ -121,7 +121,7 @@ body.cmdk-open {
   inset: 0;
   z-index: -5;
   pointer-events: none;
-  background-image: url("../images/img-banner.jpg");
+  background-image: url("../images/img-banner.webp");
   background-size: cover;
   background-position: center;
   filter: brightness(0.2) contrast(1.1);
@@ -663,7 +663,7 @@ section .title .tag {
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+  /* filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); */
 }
 
 @keyframes morphProfile {
@@ -1696,6 +1696,7 @@ section .title .tag {
 .pf-track {
   position: relative;
   height: 440px;
+  min-height: 440px;
 }
 .pf-slide {
   position: absolute;

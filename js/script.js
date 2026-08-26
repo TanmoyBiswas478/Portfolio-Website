@@ -1455,6 +1455,9 @@ const Portfolio = (() => {
       );
 
       this.on(this.track, "focusin", (e) => {
+        // 🔥 FIX: Agar mouse se click hua hai, toh ignore karo. Sirf Keyboard (Tab) par slide ghumao!
+        if (!e.target.matches(':focus-visible')) return;
+
         const slide = e.target.closest(".pf-slide");
         const i = this.slides.indexOf(slide);
         if (i >= 0) this.goTo(i);
@@ -1615,6 +1618,10 @@ const Portfolio = (() => {
 
       this.on(this.viewport, "pointerdown", (e) => {
         if (e.button !== 0 && e.pointerType === "mouse") return;
+        
+        // 🔥 MAIN FIX: Agar click link (a) ya button par hua hai, toh drag shuru mat karo!
+        if (e.target.closest('a, button')) return;
+
         pointerId = e.pointerId;
         this.dragging = true;
         this.viewport.setPointerCapture(pointerId);

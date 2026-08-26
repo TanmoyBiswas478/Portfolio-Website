@@ -16,8 +16,7 @@
     document.documentElement.classList.remove('no-js');
   </script>
 
-  <!-- <link rel="preload" as="image" href="images/me.webp" fetchpriority="high"> -->
-  <link rel="preload" as="image" href="images/TB.svg" fetchpriority="high">
+  <link rel="preload" as="image" href="images/TB.webp" fetchpriority="high">
   <link rel="stylesheet" href="css/css-style.css">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -105,10 +104,10 @@
           <div class="left-content">
             <div class="text-1"><i class="fas fa-terminal" style="color: var(--cyan); margin-right: 8px;" aria-hidden="true"></i> Hello there!!</div>
             <h1 class="text-2">
-  <span style="--i:1">I'm</span> 
-  <span style="--i:2">Tanmoy</span> 
-  <span class="surname" style="--i:3">Biswas</span>
-</h1>
+              <span style="--i:1">I'm</span>
+              <span style="--i:2">Tanmoy</span>
+              <span class="surname" style="--i:3">Biswas</span>
+            </h1>
             <div class="text-3">and I'm an
               <span class="typing" data-typewriter='["Associate Software Development Engineer","Full-Stack Engineer","Artificial Intelligence and Data Science Graduate","Open-Source Contributor"]'>Associate Software Development Engineer</span>
             </div>
@@ -122,7 +121,8 @@
             <div class="liquid-blob" aria-hidden="true"></div>
 
             <div class="hero-image-wrapper parallax-tilt">
-              <img src="images/TB.svg" alt="Tanmoy Biswas" fetchpriority="high" width="450" height="450">
+              <!-- <img src="images/TB.webp" alt="Tanmoy Biswas" fetchpriority="high" width="450" height="450"> -->
+               <img src="images/TB.webp" alt="Profile Image" loading="lazy" width="380" height="420">
             </div>
 
             <!-- Orbiting Glass Chips -->
@@ -146,20 +146,33 @@
         <div class="marquee">
           <div class="marquee-track">
             <span class="tick-item"><i class="fab fa-python"></i>Python</span>
-            <span class="tick-item"><i class="fas fa-brain"></i>AI &amp; Data Science</span>
-            <span class="tick-item"><i class="fas fa-code"></i>Full-Stack</span>
+            <span class="tick-item"><i class="fas fa-brain"></i>Artificial Intelligence &amp; Data Science</span>
+            <span class="tick-item"><i class="fas fa-laptop-code"></i>Full-Stack</span>
+            <span class="tick-item"><i class="fab fa-html5"></i>HTML</span>
+            <span class="tick-item"><i class="fab fa-css3-alt"></i>CSS</span>
+            <span class="tick-item"><i class="fab fa-angular"></i>Angular</span>
+            <span class="tick-item"><i class="fab fa-bootstrap"></i>Bootstrap</span>
+            <span class="tick-item"><i class="fas fa-file-code"></i>Blade</span>
             <span class="tick-item"><i class="fas fa-database"></i>MySQL</span>
             <span class="tick-item"><i class="fab fa-php"></i>PHP</span>
+            <span class="tick-item"><i class="fab fa-laravel"></i>Laravel</span>
             <span class="tick-item"><i class="fas fa-network-wired"></i>LSTM</span>
-            <span class="tick-item"><i class="fas fa-code-branch"></i>Open-Source</span>
+            <span class="tick-item"><i class="fab fa-osi"></i>Open-Source</span>
             <span class="tick-item dot-sep"></span>
+            
             <span class="tick-item"><i class="fab fa-python"></i>Python</span>
-            <span class="tick-item"><i class="fas fa-brain"></i>AI &amp; Data Science</span>
-            <span class="tick-item"><i class="fas fa-code"></i>Full-Stack</span>
+            <span class="tick-item"><i class="fas fa-brain"></i>Artificial Intelligence &amp; Data Science</span>
+            <span class="tick-item"><i class="fas fa-laptop-code"></i>Full-Stack</span>
+            <span class="tick-item"><i class="fab fa-html5"></i>HTML</span>
+            <span class="tick-item"><i class="fab fa-css3-alt"></i>CSS</span>
+            <span class="tick-item"><i class="fab fa-angular"></i>Angular</span>
+            <span class="tick-item"><i class="fab fa-bootstrap"></i>Bootstrap</span>
+            <span class="tick-item"><i class="fas fa-file-code"></i>Blade</span>
             <span class="tick-item"><i class="fas fa-database"></i>MySQL</span>
             <span class="tick-item"><i class="fab fa-php"></i>PHP</span>
+            <span class="tick-item"><i class="fab fa-laravel"></i>Laravel</span>
             <span class="tick-item"><i class="fas fa-network-wired"></i>LSTM</span>
-            <span class="tick-item"><i class="fas fa-code-branch"></i>Open-Source</span>
+            <span class="tick-item"><i class="fab fa-osi"></i>Open-Source</span>
             <span class="tick-item dot-sep"></span>
           </div>
         </div>
@@ -195,7 +208,7 @@
         <div class="about-content panel reveal">
           <div class="column left">
             <div class="photo-frame">
-              <img src="images/TB.svg" alt="Profile Image" loading="lazy" width="380" height="420">
+              <img src="images/TB.webp" alt="Profile Image" loading="lazy" width="380" height="420">
             </div>
           </div>
           <div class="column right">
@@ -204,7 +217,7 @@
               <span class="typing-2" data-typewriter='["Associate Software Development Engineer","Full-Stack Engineer","Artificial Intelligence and Data Science Graduate","Open-Source Contributor"]' data-speed="52">Associate Software Development Engineer</span>
             </div>
             <p>
-              I am a Full-Stack Engineer, Data Systems Designer, and an <b>Associate Software Development Engineer (ASDE) at iLogitron Technologies</b>. My path into tech was defined by clear intent. I started with Electrical Engineering at Techno Main Salt Lake, but 1.5 years in, my deep passion for writing clean algorithms and software architectures became undeniable. Making a strategic pivot, I transitioned to a <b>B.Tech in Artificial Intelligence &amp; Data Science</b> at Techno College of Engineering, Agartala.
+              I am a Full-Stack Engineer, Data Systems Designer, and an <b>Associate Software Development Engineer (ASDE) at iLogitron Technologies Pvt. Ltd.</b>. My path into tech was defined by clear intent. I started with Electrical Engineering at Techno Main Salt Lake Kolkata, but 1.5 years in, my deep passion for writing clean algorithms and software architectures became undeniable. Making a strategic pivot, I transitioned to a <b>B.Tech in Artificial Intelligence &amp; Data Science</b> at Techno College of Engineering, Agartala.
               <br><br>
               <b>My Technical Spectrum:</b><br>
               • <b>Intelligent Data Modeling:</b> Developing Deep Learning frameworks like LSTM neural models for time-series forecasting and researching complex Fuzzy Logic Systems.<br>
@@ -229,10 +242,11 @@
       </div>
       <div class="skills-marquee marquee">
         <div class="marquee-track">
+          <!-- FIRST SET OF SKILLS -->
           <div class="skill-chip spec-card"><i class="fab fa-html5" aria-hidden="true"></i>
             <div class="text">HTML</div>
           </div>
-          <div class="skill-chip spec-card"><i class="fab fa-css3" aria-hidden="true"></i>
+          <div class="skill-chip spec-card"><i class="fab fa-css3-alt" aria-hidden="true"></i>
             <div class="text">CSS</div>
           </div>
           <div class="skill-chip spec-card"><i class="fas fa-copyright" aria-hidden="true"></i>
@@ -247,10 +261,27 @@
           <div class="skill-chip spec-card"><i class="fas fa-database" aria-hidden="true"></i>
             <div class="text">MySQL</div>
           </div>
+          <div class="skill-chip spec-card"><i class="fab fa-angular" aria-hidden="true"></i>
+            <div class="text">Angular</div>
+          </div>
+          <div class="skill-chip spec-card"><i class="fab fa-react" aria-hidden="true"></i>
+            <div class="text">React</div>
+          </div>
+          <div class="skill-chip spec-card"><i class="fab fa-laravel" aria-hidden="true"></i>
+            <div class="text">Laravel</div>
+          </div>
+          <div class="skill-chip spec-card"><i class="fas fa-file-code" aria-hidden="true"></i>
+            <div class="text">Blade</div>
+          </div>
+          <div class="skill-chip spec-card"><i class="fab fa-bootstrap" aria-hidden="true"></i>
+            <div class="text">Bootstrap</div>
+          </div>
+
+          <!-- SECOND SET OF SKILLS (Required for seamless infinite scrolling) -->
           <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-html5"></i>
             <div class="text">HTML</div>
           </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-css3"></i>
+          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-css3-alt"></i>
             <div class="text">CSS</div>
           </div>
           <div class="skill-chip spec-card" aria-hidden="true"><i class="fas fa-copyright"></i>
@@ -265,41 +296,20 @@
           <div class="skill-chip spec-card" aria-hidden="true"><i class="fas fa-database"></i>
             <div class="text">MySQL</div>
           </div>
-          <div class="skill-chip spec-card"><i class="fab fa-html5" aria-hidden="true"></i>
-            <div class="text">HTML</div>
+          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-angular"></i>
+            <div class="text">Angular</div>
           </div>
-          <div class="skill-chip spec-card"><i class="fab fa-css3" aria-hidden="true"></i>
-            <div class="text">CSS</div>
+          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-react"></i>
+            <div class="text">React</div>
           </div>
-          <div class="skill-chip spec-card"><i class="fas fa-copyright" aria-hidden="true"></i>
-            <div class="text">C</div>
+          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-laravel"></i>
+            <div class="text">Laravel</div>
           </div>
-          <div class="skill-chip spec-card"><i class="fab fa-python" aria-hidden="true"></i>
-            <div class="text">Python</div>
+          <div class="skill-chip spec-card" aria-hidden="true"><i class="fas fa-file-code"></i>
+            <div class="text">Blade</div>
           </div>
-          <div class="skill-chip spec-card"><i class="fab fa-php" aria-hidden="true"></i>
-            <div class="text">PHP</div>
-          </div>
-          <div class="skill-chip spec-card"><i class="fas fa-database" aria-hidden="true"></i>
-            <div class="text">MySQL</div>
-          </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-html5"></i>
-            <div class="text">HTML</div>
-          </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-css3"></i>
-            <div class="text">CSS</div>
-          </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fas fa-copyright"></i>
-            <div class="text">C</div>
-          </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-python"></i>
-            <div class="text">Python</div>
-          </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-php"></i>
-            <div class="text">PHP</div>
-          </div>
-          <div class="skill-chip spec-card" aria-hidden="true"><i class="fas fa-database"></i>
-            <div class="text">MySQL</div>
+          <div class="skill-chip spec-card" aria-hidden="true"><i class="fab fa-bootstrap"></i>
+            <div class="text">Bootstrap</div>
           </div>
         </div>
       </div>
@@ -673,7 +683,7 @@
             <h3>SUMMARIZE.PRO</h3>
             <p>An AI-powered, multi-modal book summariser that pulls the key insights out of dense texts &mdash; released free for anyone to use.</p>
             <div class="lang-tags"><span>Python</span><span>NLP</span><span>Multi-modal</span></div>
-            <a href="#" target="_blank" rel="noopener" class="interactive-link">View project <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+            <a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/ai-book-summarizer_final" target="_blank" rel="noopener" class="interactive-link">View project <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
           </div>
         </div>
 
@@ -713,8 +723,34 @@
                       </div>
                       <div class="repo-line"><span class="repo-dot ai" aria-hidden="true"></span><span class="repo-path">stock-lstm</span></div>
                       <div class="text">LSTM Stock &amp; Portfolio</div>
-                      <p>A time-series forecasting engine with a live Streamlit dashboard for market analysis.<span><a href="https://github.com/TanmoyBiswas478" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A time-series forecasting engine with a live Streamlit dashboard for market analysis, Portfolio Management &amp;& visualization through web-app &amp; notifications.<span><a href="https://github.com/TanmoyBiswas478" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>Python</span><span>LSTM</span><span>Streamlit</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="pf-slide" data-tags="Web,Node.js,Tailwind CSS,fullstack">
+                  <div class="card spec-card">
+                    <div class="box">
+                      <div class="proj-shot">
+                        <img src="images/Trip.webp" alt="Trip App" loading="lazy">
+                      </div>
+                      <div class="repo-line"><span class="repo-dot ai" aria-hidden="true"></span><span class="repo-path">trip-app</span></div>
+                      <div class="text">Trip App</div>
+                      <p>A timely booking application for travel planning.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/blob/main/Ola.zip" target="_blank" rel="noopener">View project</a></span></p>
+                      <div class="lang-tags"><span>Node.js</span><span>Tailwind CSS</span><span>Full Stack</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="pf-slide" data-tags="ai,python,ml">
+                  <div class="card spec-card">
+                    <div class="box">
+                      <div class="proj-shot">
+                        <img src="images/Trip.webp" alt="Object Detection App" loading="lazy">
+                      </div>
+                      <div class="repo-line"><span class="repo-dot ai" aria-hidden="true"></span><span class="repo-path">object-detection-app</span></div>
+                      <div class="text">Object Detection App</div>
+                      <p>An image recognition application using computer vision techniques.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/blob/main/ObjectDetection.zip" target="_blank" rel="noopener">View project</a></span></p>
+                      <div class="lang-tags"><span>Python</span><span>OpenCV</span><span>TensorFlow</span></div>
                     </div>
                   </div>
                 </div>
