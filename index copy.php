@@ -18,8 +18,15 @@
 
   <link rel="preload" as="image" href="images/TB.webp" fetchpriority="high">
   <link rel="stylesheet" href="css/css-style.css">
+  
+  <!-- Preconnect to speed up Font Awesome server connection -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Asynchronous Font Awesome (Render-Blocking Fixed) -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></noscript>
+
+
 
   <!--
     No jQuery, no Typed.js, no Waypoints, no Owl Carousel.
@@ -122,7 +129,7 @@
 
             <div class="hero-image-wrapper parallax-tilt">
               <!-- <img src="images/TB.webp" alt="Tanmoy Biswas" fetchpriority="high" width="450" height="450"> -->
-               <img src="images/TB.webp" alt="Profile Image" loading="lazy" width="380" height="420">
+              <img src="images/TB.webp" alt="Profile Image" loading="lazy" width="380" height="420">
             </div>
 
             <!-- Orbiting Glass Chips -->
@@ -159,7 +166,7 @@
             <span class="tick-item"><i class="fas fa-network-wired"></i>LSTM</span>
             <span class="tick-item"><i class="fab fa-osi"></i>Open-Source</span>
             <span class="tick-item dot-sep"></span>
-            
+
             <span class="tick-item"><i class="fab fa-python"></i>Python</span>
             <span class="tick-item"><i class="fas fa-brain"></i>Artificial Intelligence &amp; Data Science</span>
             <span class="tick-item"><i class="fas fa-laptop-code"></i>Full-Stack</span>
@@ -715,6 +722,7 @@
             <div class="pf-viewport">
               <div class="pf-track">
 
+                <!-- Project 1: LSTM -->
                 <div class="pf-slide" data-tags="ai,python,ml">
                   <div class="card spec-card">
                     <div class="box">
@@ -723,38 +731,45 @@
                       </div>
                       <div class="repo-line"><span class="repo-dot ai" aria-hidden="true"></span><span class="repo-path">stock-lstm</span></div>
                       <div class="text">LSTM Stock &amp; Portfolio</div>
-                      <p>A time-series forecasting engine with a live Streamlit dashboard for market analysis, Portfolio Management &amp;& visualization through web-app &amp; notifications.<span><a href="https://github.com/TanmoyBiswas478" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A time-series forecasting engine featuring a live Streamlit dashboard for market analysis, portfolio management, data visualization, and real-time notifications.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/Stock" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>Python</span><span>LSTM</span><span>Streamlit</span></div>
                     </div>
                   </div>
                 </div>
+
+                <!-- Project 2: Trip App (Missing Photo 1) -->
                 <div class="pf-slide" data-tags="Web,Node.js,Tailwind CSS,fullstack">
                   <div class="card spec-card">
                     <div class="box">
                       <div class="proj-shot">
-                        <img src="images/Trip.webp" alt="Trip App" loading="lazy">
+                        <!-- Apni photo ka naam 'trip_app.webp' rakh kar images folder mein daal dena -->
+                        <img src="images/trip_app.webp" alt="Trip App Interface" loading="lazy">
                       </div>
                       <div class="repo-line"><span class="repo-dot ai" aria-hidden="true"></span><span class="repo-path">trip-app</span></div>
                       <div class="text">Trip App</div>
-                      <p>A timely booking application for travel planning.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/blob/main/Ola.zip" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A responsive, full-stack travel application designed to streamline trip planning, fast bookings, and complete itinerary management.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/Ola" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>Node.js</span><span>Tailwind CSS</span><span>Full Stack</span></div>
                     </div>
                   </div>
                 </div>
+
+                <!-- Project 3: Object Detection (Missing Photo 2) -->
                 <div class="pf-slide" data-tags="ai,python,ml">
                   <div class="card spec-card">
                     <div class="box">
                       <div class="proj-shot">
-                        <img src="images/Trip.webp" alt="Object Detection App" loading="lazy">
+                        <!-- Apni photo ka naam 'object_detection.webp' rakh kar images folder mein daal dena -->
+                        <img src="images/object_detection.webp" alt="Object Detection Application" loading="lazy">
                       </div>
                       <div class="repo-line"><span class="repo-dot ai" aria-hidden="true"></span><span class="repo-path">object-detection-app</span></div>
                       <div class="text">Object Detection App</div>
-                      <p>An image recognition application using computer vision techniques.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/blob/main/ObjectDetection.zip" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A robust computer vision application leveraging deep learning techniques for highly accurate, real-time object detection and image recognition.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/ObjectDetection" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>Python</span><span>OpenCV</span><span>TensorFlow</span></div>
                     </div>
                   </div>
                 </div>
 
+                <!-- Project 4: HMS -->
                 <div class="pf-slide" data-tags="fullstack,php,mysql,live">
                   <div class="card spec-card">
                     <div class="box">
@@ -764,12 +779,13 @@
                       </div>
                       <div class="repo-line"><span class="repo-dot db" aria-hidden="true"></span><span class="repo-path">hms</span></div>
                       <div class="text">Hospital Management</div>
-                      <p>A production-ready enterprise system for patient records, scheduling, and billing.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/hms" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A production-ready enterprise system optimizing hospital workflows, including patient records, staff scheduling, and automated billing.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/hms" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>PHP</span><span>MySQL</span><span>Bootstrap</span></div>
                     </div>
                   </div>
                 </div>
 
+                <!-- Project 5: VHAT -->
                 <div class="pf-slide" data-tags="fullstack,php,mysql,live">
                   <div class="card spec-card">
                     <div class="box">
@@ -779,12 +795,13 @@
                       </div>
                       <div class="repo-line"><span class="repo-dot db" aria-hidden="true"></span><span class="repo-path">vhatripura.org</span></div>
                       <div class="text">VHAT Management System</div>
-                      <p>A robust, live data-management system optimising day-to-day healthcare operations.<span><a href="https://vhatripura.org" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A live data-management platform custom-built to seamlessly optimize day-to-day healthcare and NGO administrative operations.<span><a href="https://vhatripura.org" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>PHP</span><span>MySQL</span><span>JS</span></div>
                     </div>
                   </div>
                 </div>
 
+                <!-- Project 6: Cake Shop -->
                 <div class="pf-slide" data-tags="fullstack,php,mysql">
                   <div class="card spec-card">
                     <div class="box">
@@ -793,26 +810,29 @@
                       </div>
                       <div class="repo-line"><span class="repo-dot db" aria-hidden="true"></span><span class="repo-path">cake-shop</span></div>
                       <div class="text">Celebration Cake Shop</div>
-                      <p>A complete storefront and management system built and deployed for a bakery.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/backerynew" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>An end-to-end e-commerce storefront and backend inventory management system built specifically for a modern bakery business.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/backerynew" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>PHP</span><span>MySQL</span></div>
                     </div>
                   </div>
                 </div>
 
+                <!-- Project 7: LMS (Missing Photo 3) -->
                 <div class="pf-slide" data-tags="fullstack,php,mysql">
                   <div class="card spec-card">
                     <div class="box">
                       <div class="proj-shot">
+                        <!-- Apni photo ka naam 'lms_portal.webp' rakh kar images folder mein daal dena -->
                         <img src="images/lms.webp" alt="Learning management system" loading="lazy">
                       </div>
                       <div class="repo-line"><span class="repo-dot db" aria-hidden="true"></span><span class="repo-path">lms</span></div>
                       <div class="text">Learning Management</div>
-                      <p>An LMS for academic and administrative management, from enrolment to grading.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/lms" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>A centralized Learning Management System handling the complete academic lifecycle, from student enrollment to grading and administration.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/lms" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>PHP</span><span>MySQL</span></div>
                     </div>
                   </div>
                 </div>
 
+                <!-- Project 8: Kreation Studio -->
                 <div class="pf-slide" data-tags="fullstack,php,mysql,live">
                   <div class="card spec-card">
                     <div class="box">
@@ -822,7 +842,7 @@
                       </div>
                       <div class="repo-line"><span class="repo-dot db" aria-hidden="true"></span><span class="repo-path">kreation-studio</span></div>
                       <div class="text">Kreation Hair Studio</div>
-                      <p>A live salon-management system &mdash; bookings, services, and billing &mdash; currently in use.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/parlour_new" target="_blank" rel="noopener">View project</a></span></p>
+                      <p>An active salon management portal that handles real-time customer bookings, service tracking, and automated billing.<span><a href="https://github.com/TanmoyBiswas478/Projects_madeof_me/tree/main/parlour_new" target="_blank" rel="noopener">View project</a></span></p>
                       <div class="lang-tags"><span>PHP</span><span>MySQL</span></div>
                     </div>
                   </div>
